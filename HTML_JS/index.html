@@ -2,7 +2,91 @@
 <html>
     <head>
         <title>CSV Report</title>
-        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="jquery.csv-0.71.js"></script>
+	<script type="text/javascript">
+		$(document).ready( function() {
+			$('#calculate').click( function(e) {
+				e.preventDefault();
+				var text = $('#input').val();
+				var parsed_text = $.csv.toArrays(text);
+
+				// use these three Arrays to track each individual's total hours
+				//  and number of events.
+				// NOTE: assumes that we can keep the same index cross-referenced
+				//	  among the three Arrays...so be careful.
+				var names = new Array();
+				var hours = new Array();
+				var events = new Array();
+
+				var avg_hours = new Array();
+			
+				console.log(parsed_text);
+
+				// now loop through the 2D array 'parsed_text' and 
+				//  sum up hours / events for each individual
+				for (var i = 0; i < parsed_text.length; i++) {
+					var new_name = parsed_text[i][0].toLowerCase();
+					var new_hours = parseFloat(parsed_text[i][1]);
+					var name_index = $.inArray(new_name, names);
+					
+					if ( name_index >= 0 ) { // the name already exists in the Array
+						hours[name_index] += new_hours;
+						events[name_index]++;
+					}
+					else { // the name does not exist...add it
+						names.push( new_name );
+						hours.push( new_hours );
+						events.push( 1 );
+
+						// need to set name_index since was found to be -1
+						name_index = names.length - 1;
+					}
+					// calculate / recalculate average hours per person
+					avg_hours[name_index] = hours[name_index] / events[name_index];
+				}
+
+				console.log(names);
+				console.log(hours);
+				console.log(events);
+				console.log(avg_hours);
+
+				var report = "";
+
+				report += "<table><tr>";
+				report += "<th>Line</th><th>Name</th><th>Events</th><th>Average Hours</th></tr>";
+
+				// create / format the report and output to the appropriate block
+				for (var i = 0; i < names.length; i++) {
+					var line = i + 1;
+					report += "<tr><td>" + line + "</td><td>" + names[i] + "</td><td>" + events[i] + "</td><td>" + avg_hours[i] + "</td></tr>";
+				}
+				report += "</table>";
+
+				console.log(report);
+
+				$('#report').html(report);
+			});	
+		});
+	</script>
+	<style>
+		/* style the output table so the gridlines show */
+		table {
+		border-collapse:collapse;
+		border:1px solid #000000;
+		}
+	
+		table td { 
+		text-align: center;
+		border:1px solid #000000; 
+		}
+
+		table th {
+		border:1px solid #000000;
+		}
+	
+	</style>
     </head>
     <body>
         <h1>CSV Report</h1>
